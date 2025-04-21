@@ -28,8 +28,8 @@ jobs:
           # Debug: Xem danh sách file/thư mục sau khi giải nén
           ls -la
           # Kiểm tra và di chuyển thư mục wordpress
-          rm -rf wordpress
           if [ -d "wordpress-$LATEST_VERSION/wordpress" ]; then
+            rm -rf wordpress
             mv wordpress-$LATEST_VERSION/wordpress wordpress || { echo "Error: Failed to move wordpress directory from wordpress-$LATEST_VERSION"; exit 1; }
             rm -rf wordpress-$LATEST_VERSION
           elif [ -d "wordpress" ]; then
