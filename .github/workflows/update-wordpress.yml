@@ -27,11 +27,17 @@ jobs:
           unzip latest.zip || { echo "Failed to unzip WordPress"; exit 1; }
           # Debug: Xem danh sách file/thư mục sau khi giải nén
           ls -la
-          # Di chuyển thư mục wordpress từ bên trong wordpress-$LATEST_VERSION
+          # Kiểm tra và di chuyển thư mục wordpress
           rm -rf wordpress
-          mv wordpress-$LATEST_VERSION/wordpress wordpress || { echo "Error: wordpress directory not found inside wordpress-$LATEST_VERSION"; exit 1; }
-          # Xóa thư mục wordpress-$LATEST_VERSION sau khi di chuyển
-          rm -rf wordpress-$LATEST_VERSION
+          if [ -d "wordpress-$LATEST_VERSION/wordpress" ]; then
+            mv wordpress-$LATEST_VERSION/wordpress wordpress || { echo "Error: Failed to move wordpress directory from wordpress-$LATEST_VERSION"; exit 1; }
+            rm -rf wordpress-$LATEST_VERSION
+          elif [ -d "wordpress" ]; then
+            echo "wordpress directory found directly after unzip"
+          else
+            echo "Error: wordpress directory not found after unzip"
+            exit 1
+          fi
           # Tạo file wordpress.zip
           zip -r wordpress.zip wordpress || { echo "Failed to create wordpress.zip"; exit 1; }
           rm latest.zip
