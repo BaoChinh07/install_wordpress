@@ -25,7 +25,7 @@ jobs:
           echo "Downloading WordPress $LATEST_VERSION..."
           curl -L https://wordpress.org/wordpress-$LATEST_VERSION.zip -o latest.zip
           unzip -q latest.zip
-          rm -rf wordpress && mv wordpress-$LATEST_VERSION wordpress
+          rm -rf wordpress && mv wordpress wordpress
           rm latest.zip
       - name: Commit and push changes
         run: |
