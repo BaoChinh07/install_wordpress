@@ -38,6 +38,13 @@ jobs:
             echo "Error: wordpress directory not found after unzip"
             exit 1
           fi
+          # Sao chép wp-config-sample.php thành wp-config.php nếu chưa tồn tại
+          if [ ! -f "wordpress/wp-config.php" ]; then
+            cp wordpress/wp-config-sample.php wordpress/wp-config.php || { echo "Error: Failed to copy wp-config-sample.php to wp-config.php"; exit 1; }
+            echo "Created wp-config.php from wp-config-sample.php"
+          else
+            echo "wp-config.php already exists, skipping copy"
+          fi
           # Tạo file wordpress.zip
           zip -r wordpress.zip wordpress || { echo "Failed to create wordpress.zip"; exit 1; }
           rm latest.zip
