@@ -23,9 +23,17 @@ jobs:
             fi
           fi
           echo "Downloading WordPress $LATEST_VERSION..."
-          curl -L https://wordpress.org/wordpress-$LATEST_VERSION.zip -o latest.zip
-          unzip -q latest.zip
-          rm -rf wordpress && mv wordpress wordpress
+          curl -L https://wordpress.org/wordpress-$LATEST_VERSION.zip -o latest.zip || { echo "Failed to download WordPress"; exit 1; }
+          unzip latest.zip || { echo "Failed to unzip WordPress"; exit 1; }
+          # Debug: Xem danh sách file/thư mục sau khi giải nén
+          ls -la
+          # Di chuyển thư mục wordpress từ bên trong wordpress-$LATEST_VERSION
+          rm -rf wordpress
+          mv wordpress-$LATEST_VERSION/wordpress wordpress || { echo "Error: wordpress directory not found inside wordpress-$LATEST_VERSION"; exit 1; }
+          # Xóa thư mục wordpress-$LATEST_VERSION sau khi di chuyển
+          rm -rf wordpress-$LATEST_VERSION
+          # Tạo file wordpress.zip
+          zip -r wordpress.zip wordpress || { echo "Failed to create wordpress.zip"; exit 1; }
           rm latest.zip
       - name: Commit and push changes
         run: |
