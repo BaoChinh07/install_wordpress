@@ -1,20 +1,24 @@
 #!/bin/bash
 
 # ========================
-# Tự động cài đặt WordPress mới nhất
+# Script: install_wp.sh
+# Mục đích: Tự động cài WordPress mới nhất từ GitHub Repo
 # ========================
 
-INSTALL_DIR=${1:-wordpress}
+# URL tới file wordpress.zip trong repo GitHub của bạn
+REPO_URL="https://github.com/BaoChinh07/install_wordpress/raw/master/wordpress.zip"
 
-echo "📥 Đang tải WordPress mới nhất..."
-curl -O https://wordpress.org/latest.zip
+echo "🌐 Đang tải WordPress từ repo..."
+curl -L -o wordpress.zip "$REPO_URL" || { echo "❌ Tải wordpress.zip thất bại!"; exit 1; }
 
 echo "📦 Đang giải nén..."
-unzip -q latest.zip
-rm -f latest.zip
+unzip -q wordpress.zip || { echo "❌ Giải nén thất bại!"; exit 1; }
 
-echo "🚚 Di chuyển thư mục WordPress đến $INSTALL_DIR..."
-rm -rf "$INSTALL_DIR"
-mv wordpress "$INSTALL_DIR"
+echo "🚚 Đang di chuyển source vào thư mục hiện tại..."
+mv wordpress/* ./ || { echo "❌ Di chuyển thất bại!"; exit 1; }
 
-echo "✅ WordPress đã được cài vào thư mục $INSTALL_DIR"
+echo "🧹 Dọn dẹp file tạm..."
+rm -rf wordpress.zip wordpress
+
+echo "✅ WordPress đã được cài đặt hoàn tất!"
+
