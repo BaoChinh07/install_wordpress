@@ -15,10 +15,11 @@ echo "📦 Đang giải nén..."
 unzip -q wordpress.zip || { echo "❌ Giải nén thất bại!"; exit 1; }
 
 echo "🚚 Đang di chuyển source vào thư mục hiện tại..."
-mv wordpress/* ./ || { echo "❌ Di chuyển thất bại!"; exit 1; }
+shopt -s dotglob nullglob
+mv wordpress/* . || { echo "❌ Di chuyển file thất bại!"; shopt -u dotglob nullglob; exit 1; }
+shopt -u dotglob nullglob
 
 echo "🧹 Dọn dẹp file tạm..."
 rm -rf wordpress.zip wordpress
 
 echo "✅ WordPress đã được cài đặt hoàn tất!"
-
