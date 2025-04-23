@@ -1,0 +1,58 @@
+name: Update WordPress
+on:
+  schedule:
+    - cron: '0 0 * * *' # Chạy lúc 0h UTC mỗi ngày
+  workflow_dispatch: # Cho phép chạy thủ công
+jobs:
+  update-wordpress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Check WordPress version
+        run: |
+          LATEST_VERSION=$(curl -s https://api.wordpress.org/core/version-check/1.7/ | jq -r '.offers[0].current')
+          echo "Latest WordPress version: $LATEST_VERSION"
+          if [ -f "wordpress/wp-includes/version.php" ]; then
+            CURRENT_VERSION=$(grep "wp_version = " wordpress/wp-includes/version.php | cut -d "'" -f 2)
+            if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
+              echo "Already up-to-date with version $CURRENT_VERSION"
+              exit 0
+            fi
+          fi
+          echo "Downloading WordPress $LATEST_VERSION..."
+          curl -L https://wordpress.org/wordpress-$LATEST_VERSION.zip -o latest.zip || { echo "Failed to download WordPress"; exit 1; }
+          unzip latest.zip || { echo "Failed to unzip WordPress"; exit 1; }
+          # Debug: Xem danh sách file/thư mục sau khi giải nén
+          ls -la
+          # Kiểm tra và di chuyển thư mục wordpress
+          if [ -d "wordpress-$LATEST_VERSION/wordpress" ]; then
+            rm -rf wordpress
+            mv wordpress-$LATEST_VERSION/wordpress wordpress || { echo "Error: Failed to move wordpress directory from wordpress-$LATEST_VERSION"; exit 1; }
+            rm -rf wordpress-$LATEST_VERSION
+          elif [ -d "wordpress" ]; then
+            echo "wordpress directory found directly after unzip"
+          else
+            echo "Error: wordpress directory not found after unzip"
+            exit 1
+          fi
+          # Sao chép wp-config-sample.php thành wp-config.php nếu chưa tồn tại
+          if [ ! -f "wordpress/wp-config.php" ]; then
+            cp wordpress/wp-config-sample.php wordpress/wp-config.php || { echo "Error: Failed to copy wp-config-sample.php to wp-config.php"; exit 1; }
+            echo "Created wp-config.php from wp-config-sample.php"
+          else
+            echo "wp-config.php already exists, skipping copy"
+          fi
+          # Tạo file wordpress.zip và xóa thư mục wordpress/
+          zip -r wordpress.zip wordpress || { echo "Failed to create wordpress.zip"; exit 1; }
+          rm -rf wordpress
+          rm latest.zip
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add .
+          git commit -m "Update WordPress to $LATEST_VERSION" || echo "No changes to commit"
+          git push
