@@ -45,6 +45,25 @@ jobs:
           else
             echo "wp-config.php already exists, skipping copy"
           fi
+          # Tạo file .htaccess mặc định nếu chưa tồn tại
+          if [ ! -f "wordpress/.htaccess" ]; then
+            cat << 'EOF' > wordpress/.htaccess
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
+EOF
+            echo "Created .htaccess file"
+          else
+            echo ".htaccess already exists, skipping creation"
+          fi
           # Tạo file wordpress.zip
           zip -r wordpress.zip wordpress || { echo "Failed to create wordpress.zip"; exit 1; }
           rm latest.zip
